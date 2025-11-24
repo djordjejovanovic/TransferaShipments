@@ -50,7 +50,7 @@ LocalDocumentProcessorHostedService je BackgroundService koji se registruje kao 
 
 Konekcioni stringovi
 
-Svi konekcioni stringovi se podešavaju u **`App/appsettings.json`** fajlu.
+Svi konekcioni stringovi se podešavaju u App/appsettings.json fajlu.
 
 Sadržaj appsettings.json
 
@@ -75,7 +75,7 @@ Sadržaj appsettings.json
 
 Primeri Request-ova
 
-`requests.http` fajl
+requests.http fajl
 
 Arhitektura Sistema
 
