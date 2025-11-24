@@ -13,8 +13,8 @@ Aplikacija je organizovana u sledeće module:
 - **BlobStorage** - Azure Blob Storage wrapper (podržava Azurite emulator)
 - **Azure.Messaging.ServiceBus** - Primer koriscenja na production/staging
 - **ServiceBus** - Lokalni in-memory message queue za asinhronu obradu
-  - `LocalServiceBusPublisher` - šalje poruke u Channel
-  - `LocalDocumentProcessorHostedService` - Background worker koji procesira poruke
+  - LocalServiceBusPublisher - šalje poruke u Channel
+  - LocalDocumentProcessorHostedService - Background worker koji procesira poruke
 
 **Tehnologije:**
 - .NET 8.0 / .NET 10.0
@@ -46,7 +46,7 @@ azurite --location ./azurite_workspace --silent --blobPort 10010 --queuePort 100
 
 3. Worker/Background Servis
 
-`LocalDocumentProcessorHostedService` je `BackgroundService` koji se registruje kao `HostedService` u ASP.NET Core aplikaciji i automatski se startuje prilikom pokretanja aplikacije.
+LocalDocumentProcessorHostedService je BackgroundService koji se registruje kao HostedService u ASP.NET Core aplikaciji i automatski se startuje prilikom pokretanja aplikacije.
 
 Konekcioni stringovi
 
