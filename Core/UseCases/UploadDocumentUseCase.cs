@@ -1,15 +1,18 @@
-using MediatR;
+using AppServices.Contracts.Messaging;
 using AppServices.Contracts.Repositories;
 using AppServices.Contracts.Storage;
-using AppServices.Contracts.Messaging;
+using MediatR;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
+using System.Text.Json;
+using TransferaShipments.Messages;
 
 namespace AppServices.UseCases
 {
     public record UploadDocumentRequest(
-        int ShipmentId, 
+        int ShipmentId,
         Stream FileStream,
         string FileName,
         string ContentType,
@@ -24,12 +27,14 @@ namespace AppServices.UseCases
         private readonly IServiceBusPublisher _serviceBusPublisher;
         private readonly ILogger<UploadDocumentUseCase> _logger;
         private readonly ResiliencePipeline _retryPipeline;
+        private readonly IConfiguration _configuration;
 
         public UploadDocumentUseCase(
             IShipmentRepository shipmentRepository,
             IBlobService blobService,
             IServiceBusPublisher serviceBusPublisher,
-            ILogger<UploadDocumentUseCase> logger)
+            ILogger<UploadDocumentUseCase> logger,
+            IConfiguration configuration)
         {
             _shipmentRepository = shipmentRepository;
             _blobService = blobService;
@@ -53,6 +58,78 @@ namespace AppServices.UseCases
                     }
                 })
                 .Build();
+            _configuration = configuration;
+        }
+
+        /// <summary>
+        /// AzureServiceBus implementation for the project.
+        /// But since AzureServiceBus only works for staging/production and requires a real account,
+        /// this is just an example of what the implementation would look like.
+        /// </summary>
+        [Obsolete]
+        public async Task<UploadDocumentResponse> HandleWithAzureServiceBus(UploadDocumentRequest request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                _logger.LogInformation("Upload document for ShipmentId: {ShipmentId} - Start [AZURE BUS]", request.ShipmentId);
+                if (request.FileStream == null)
+                {
+                    _logger.LogWarning("File stream is null for ShipmentId: {ShipmentId}", request.ShipmentId);
+                    return new UploadDocumentResponse(false, null, null, "File is required");
+                }
+
+                var shipment = await _shipmentRepository.GetShipmentByIdAsync(request.ShipmentId, cancellationToken);
+
+                if (shipment == null)
+                {
+                    _logger.LogWarning("Shipment not found with Id: {ShipmentId}", request.ShipmentId);
+                    return new UploadDocumentResponse(false, null, null, "Shipment not found");
+                }
+
+                var fileName = Path.GetFileName(request.FileName);
+                if (string.IsNullOrEmpty(fileName))
+                {
+                    _logger.LogWarning("Invalid file name for ShipmentId: {ShipmentId}", request.ShipmentId);
+                    return new UploadDocumentResponse(false, null, null, "Invalid file name");
+                }
+
+                var blobName = $"{request.ShipmentId}/{Guid.NewGuid()}_{fileName}";
+
+                var blobUrl = await _retryPipeline.ExecuteAsync(async token =>
+                {
+                    return await _blobService.UploadAsync(request.ContainerName, blobName, request.FileStream, request.ContentType, token);
+                }, cancellationToken);
+
+                shipment.LastDocumentBlobName = blobName;
+                shipment.LastDocumentUrl = blobUrl;
+                shipment.Status = TransferaShipments.Domain.Enums.ShipmentStatus.DocumentUploaded;
+
+                await _shipmentRepository.UpdateShipmentStatusAsync(shipment, cancellationToken);
+
+                var documentMessage = new DocumentMessage(request.ShipmentId, blobName);
+                var payload = JsonSerializer.Serialize(documentMessage);
+
+                string _serviceBusConnectionString = _configuration["ConnectionStrings:AzureServiceBus"] ?? "documents-to-process";
+                var _serviceBusQueueName = _configuration["Azure:ServiceBusQueueName"] ?? "documents-to-process";
+
+                /*var azureBus = new AzureServiceBusService(_serviceBusConnectionString, _serviceBusQueueName);
+                await azureBus.SendMessageAsync(payload);
+                await azureBus.DisposeAsync();*/
+
+                _logger.LogInformation("Upload document for ShipmentId: {ShipmentId} - End [AZURE BUS]", request.ShipmentId);
+
+                return new UploadDocumentResponse(true, blobName, blobUrl, null);
+            }
+            catch (OperationCanceledException ex)
+            {
+                _logger.LogWarning(ex, "Document upload operation was cancelled for ShipmentId: {ShipmentId}", request.ShipmentId);
+                return new UploadDocumentResponse(false, null, null, "Operation was cancelled");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error during document upload for ShipmentId: {ShipmentId}", request.ShipmentId);
+                return new UploadDocumentResponse(false, null, null, "An error occurred while uploading the document. Please try again later.");
+            }
         }
 
         public async Task<UploadDocumentResponse> Handle(UploadDocumentRequest request, CancellationToken cancellationToken)
@@ -82,7 +159,7 @@ namespace AppServices.UseCases
                 }
 
                 var blobName = $"{request.ShipmentId}/{Guid.NewGuid()}_{fileName}";
-                
+
                 var blobUrl = await _retryPipeline.ExecuteAsync(async token =>
                 {
                     return await _blobService.UploadAsync(request.ContainerName, blobName, request.FileStream, request.ContentType, token);

@@ -1,14 +1,15 @@
-using AppServices.UseCases;
+using AppServices.Contracts.Messaging;
 using AppServices.Contracts.Repositories;
 using AppServices.Contracts.Storage;
-using AppServices.Contracts.Messaging;
+using AppServices.UseCases;
 using Microsoft.EntityFrameworkCore;
+using ServiceBus.Services;
+using System.Threading.Channels;
 using TransferaShipments.BlobStorage.Services;
 using TransferaShipments.Persistence.Data;
 using TransferaShipments.Persistence.Repositories;
 using TransferaShipments.ServiceBus.HostedServices;
 using TransferaShipments.ServiceBus.Services;
-using System.Threading.Channels;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,8 @@ var channel = Channel.CreateUnbounded<string>(new UnboundedChannelOptions
     SingleWriter = false
 });
 builder.Services.AddSingleton(channel);
+// For Azure Service Bus
+//builder.Services.AddSingleton<AzureServiceBusService>();
 builder.Services.AddSingleton<IServiceBusPublisher, LocalServiceBusPublisher>();
 builder.Services.AddHostedService<LocalDocumentProcessorHostedService>();
 Console.WriteLine("✓ Using Local In-Memory Service Bus");

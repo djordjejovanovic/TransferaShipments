@@ -1,0 +1,43 @@
+[
+  {
+    "name": "Function",
+    "scriptFile": "Azurite.dll",
+    "entryPoint": "Azurite.Function.Run",
+    "language": "dotnet-isolated",
+    "properties": {
+      "IsCodeless": false
+    },
+    "bindings": [
+      {
+        "name": "myBlob",
+        "direction": "In",
+        "type": "blobTrigger",
+        "path": "samples-workitems/{name}",
+        "connection": "AzureWebJobsStorage",
+        "properties": {
+          "supportsDeferredBinding": "True"
+        }
+      }
+    ]
+  },
+  {
+    "name": "Function1",
+    "scriptFile": "Azurite.dll",
+    "entryPoint": "Azurite.Function1.Run",
+    "language": "dotnet-isolated",
+    "properties": {
+      "IsCodeless": false
+    },
+    "bindings": [
+      {
+        "name": "myQueueItem",
+        "direction": "In",
+        "type": "queueTrigger",
+        "dataType": "String",
+        "queueName": "myqueue-items",
+        "connection": "AzureWebJobsStorage",
+        "properties": {}
+      }
+    ]
+  }
+]

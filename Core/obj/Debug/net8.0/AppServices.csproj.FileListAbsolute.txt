@@ -1,0 +1,16 @@
+C:\Users\djole\Desktop\Final\Core\obj\Debug\net8.0\AppServices.csproj.AssemblyReference.cache
+C:\Users\djole\Desktop\Final\Core\obj\Debug\net8.0\AppServices.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\djole\Desktop\Final\Core\obj\Debug\net8.0\AppServices.AssemblyInfoInputs.cache
+C:\Users\djole\Desktop\Final\Core\obj\Debug\net8.0\AppServices.AssemblyInfo.cs
+C:\Users\djole\Desktop\Final\Core\obj\Debug\net8.0\AppServices.csproj.CoreCompileInputs.cache
+C:\Users\djole\Desktop\Final\Core\obj\Debug\net8.0\AppServices.sourcelink.json
+C:\Users\djole\Desktop\Final\Core\bin\Debug\net8.0\AppServices.deps.json
+C:\Users\djole\Desktop\Final\Core\bin\Debug\net8.0\AppServices.dll
+C:\Users\djole\Desktop\Final\Core\bin\Debug\net8.0\AppServices.pdb
+C:\Users\djole\Desktop\Final\Core\bin\Debug\net8.0\Domain.dll
+C:\Users\djole\Desktop\Final\Core\bin\Debug\net8.0\Domain.pdb
+C:\Users\djole\Desktop\Final\Core\obj\Debug\net8.0\AppServi.98DF7DA4.Up2Date
+C:\Users\djole\Desktop\Final\Core\obj\Debug\net8.0\AppServices.dll
+C:\Users\djole\Desktop\Final\Core\obj\Debug\net8.0\refint\AppServices.dll
+C:\Users\djole\Desktop\Final\Core\obj\Debug\net8.0\AppServices.pdb
+C:\Users\djole\Desktop\Final\Core\obj\Debug\net8.0\ref\AppServices.dll

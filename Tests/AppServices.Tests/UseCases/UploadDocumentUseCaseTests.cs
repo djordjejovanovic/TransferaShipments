@@ -28,7 +28,8 @@ public class UploadDocumentUseCaseTests
             _shipmentRepositoryMock.Object,
             _blobServiceMock.Object,
             _serviceBusPublisherMock.Object,
-            _loggerMock.Object);
+            _loggerMock.Object,
+            configuration: null!);
     }
 
     public async Task ShouldUploadDocument()

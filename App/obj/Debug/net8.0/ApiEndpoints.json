@@ -1,0 +1,76 @@
+[
+  {
+    "ContainingType": "TransferaShipments.App.Controllers.ShipmentsController",
+    "Method": "UploadDocument",
+    "RelativePath": "api/Shipments/{id}/Documents",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "file",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TransferaShipments.App.Controllers.ShipmentsController",
+    "Method": "Create",
+    "RelativePath": "api/Shipments/Create",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "shipmentCreateDto",
+        "Type": "TransferaShipments.App.Models.ShipmentCreateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TransferaShipments.App.Controllers.ShipmentsController",
+    "Method": "GetAll",
+    "RelativePath": "api/Shipments/GetAll",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TransferaShipments.App.Controllers.ShipmentsController",
+    "Method": "GetById",
+    "RelativePath": "api/Shipments/GetById/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]
