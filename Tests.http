@@ -1,0 +1,247 @@
+### TransferaShipments API - Request Examples
+### Koristite REST Client extension u VS Code za slanje ovih request-ova
+### https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+
+### Definicija base URL-a
+@baseUrl = http://localhost:5000
+@shipmentId = 1
+
+###############################################
+### 1. Kreiranje Nove Pošiljke
+###############################################
+
+### Kreiranje pošiljke - Primer 1
+POST {{baseUrl}}/api/Shipments/Create
+Content-Type: application/json
+
+{
+  "referenceNumber": "REF-2024-001",
+  "sender": "Firma ABC d.o.o., Beograd",
+  "recipient": "Kompanija XYZ d.o.o., Novi Sad"
+}
+
+### Kreiranje pošiljke - Primer 2
+POST {{baseUrl}}/api/Shipments/Create
+Content-Type: application/json
+
+{
+  "referenceNumber": "REF-2024-002",
+  "sender": "Transportna Kuća Delta, Subotica",
+  "recipient": "Maloprodaja Sigma, Kragujevac"
+}
+
+### Kreiranje pošiljke - Primer 3
+POST {{baseUrl}}/api/Shipments/Create
+Content-Type: application/json
+
+{
+  "referenceNumber": "REF-2024-003",
+  "sender": "Logistički Centar Alfa, Niš",
+  "recipient": "Distribucioni Hub Beta, Čačak"
+}
+
+###############################################
+### 2. Dobavljanje Svih Pošiljki
+###############################################
+
+### Dobavljanje svih pošiljki - prva stranica (default)
+GET {{baseUrl}}/api/Shipments/GetAll
+
+### Dobavljanje svih pošiljki - sa paginacijom
+GET {{baseUrl}}/api/Shipments/GetAll?page=1&pageSize=10
+
+### Dobavljanje svih pošiljki - druga stranica
+GET {{baseUrl}}/api/Shipments/GetAll?page=2&pageSize=10
+
+###############################################
+### 3. Dobavljanje Pošiljke Po ID-u
+###############################################
+
+### Dobavljanje pošiljke sa ID = 1
+GET {{baseUrl}}/api/Shipments/GetById/{{shipmentId}}
+
+### Dobavljanje pošiljke sa ID = 2
+GET {{baseUrl}}/api/Shipments/GetById/2
+
+### Dobavljanje pošiljke sa ID = 3
+GET {{baseUrl}}/api/Shipments/GetById/3
+
+### Dobavljanje nepostojeće pošiljke (treba da vrati 404)
+GET {{baseUrl}}/api/Shipments/GetById/999
+
+###############################################
+### 4. Upload Dokumenta za Pošiljku
+###############################################
+
+### NAPOMENA: Pre slanja ovog request-a, kreirajte test fajl:
+### echo "Ovo je test dokument" > test-invoice.pdf
+
+### Upload dokumenta za pošiljku ID = 1
+POST {{baseUrl}}/api/Shipments/{{shipmentId}}/Documents
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="file"; filename="invoice.pdf"
+Content-Type: application/pdf
+
+< ./test-invoice.pdf
+------Boundary--
+
+### Upload dokumenta za pošiljku ID = 2
+POST {{baseUrl}}/api/Shipments/2/Documents
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="file"; filename="transport-document.pdf"
+Content-Type: application/pdf
+
+< ./test-transport.pdf
+------Boundary--
+
+###############################################
+### 5. Testiranje Kompletnog Flow-a
+###############################################
+
+### FLOW TEST - Korak 1: Kreirajte pošiljku
+POST {{baseUrl}}/api/Shipments/Create
+Content-Type: application/json
+
+{
+  "referenceNumber": "FLOW-TEST-001",
+  "sender": "Test Pošiljalac",
+  "recipient": "Test Primalac"
+}
+
+### NAPOMENA: Zapamtite ID iz response-a (npr. id: 5)
+### Iskoristite taj ID u sledećem request-u
+
+### FLOW TEST - Korak 2: Proverite status (treba da bude 0 - Created)
+GET {{baseUrl}}/api/Shipments/GetById/5
+
+### FLOW TEST - Korak 3: Upload dokument
+### (Pre slanja, kreirajte: echo "Flow test dokument" > flow-test.pdf)
+POST {{baseUrl}}/api/Shipments/5/Documents
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="file"; filename="flow-test.pdf"
+Content-Type: application/pdf
+
+< ./flow-test.pdf
+------Boundary--
+
+### FLOW TEST - Korak 4: Proverite status odmah nakon upload-a
+### Status treba da bude 1 (DocumentUploaded)
+GET {{baseUrl}}/api/Shipments/GetById/5
+
+### FLOW TEST - Korak 5: Sačekajte par sekundi i proverite ponovo
+### Background worker je procesirao poruku - status treba da bude 2 (Processed)
+### Možete ovo poslati nakon 2-3 sekunde
+GET {{baseUrl}}/api/Shipments/GetById/5
+
+###############################################
+### 6. cURL Ekvivalenti (za terminale)
+###############################################
+
+### cURL - Kreiranje pošiljke
+# curl -X POST http://localhost:5000/api/Shipments/Create \
+#   -H "Content-Type: application/json" \
+#   -d '{"referenceNumber":"REF-CURL-001","sender":"cURL Sender","recipient":"cURL Recipient"}'
+
+### cURL - Dobavljanje svih pošiljki
+# curl -X GET http://localhost:5000/api/Shipments/GetAll
+
+### cURL - Dobavljanje pošiljke po ID
+# curl -X GET http://localhost:5000/api/Shipments/GetById/1
+
+### cURL - Upload dokumenta
+# echo "Test document content" > test-curl.pdf
+# curl -X POST http://localhost:5000/api/Shipments/1/Documents \
+#   -F "file=@test-curl.pdf"
+
+###############################################
+### 7. Testiranje Error Scenario-a
+###############################################
+
+### Error - Kreiranje pošiljke sa praznim body-jem (treba da vrati 400)
+POST {{baseUrl}}/api/Shipments/Create
+Content-Type: application/json
+
+{}
+
+### Error - Upload bez fajla (treba da vrati 400)
+POST {{baseUrl}}/api/Shipments/1/Documents
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+------Boundary--
+
+### Error - Invalid shipment ID = 0 (treba da vrati 400)
+GET {{baseUrl}}/api/Shipments/GetById/0
+
+### Error - Negativan shipment ID (treba da vrati 400)
+GET {{baseUrl}}/api/Shipments/GetById/-1
+
+###############################################
+### OČEKIVANI RESPONSE-OVI
+###############################################
+
+# 1. POST /api/Shipments/Create - 201 Created
+# {
+#   "success": true,
+#   "id": 1,
+#   "shipment": {
+#     "id": 1,
+#     "referenceNumber": "REF-2024-001",
+#     "sender": "Firma ABC d.o.o., Beograd",
+#     "recipient": "Kompanija XYZ d.o.o., Novi Sad",
+#     "status": 0,
+#     "createdAt": "2024-11-24T01:00:00Z"
+#   },
+#   "errorMessage": null
+# }
+
+# 2. GET /api/Shipments/GetAll - 200 OK
+# {
+#   "items": [
+#     {
+#       "id": 1,
+#       "referenceNumber": "REF-2024-001",
+#       "sender": "Firma ABC d.o.o., Beograd",
+#       "recipient": "Kompanija XYZ d.o.o., Novi Sad",
+#       "status": 0,
+#       "createdAt": "2024-11-24T01:00:00Z"
+#     }
+#   ],
+#   "totalCount": 1,
+#   "page": 1,
+#   "pageSize": 20
+# }
+
+# 3. GET /api/Shipments/GetById/1 - 200 OK
+# {
+#   "id": 1,
+#   "referenceNumber": "REF-2024-001",
+#   "sender": "Firma ABC d.o.o., Beograd",
+#   "recipient": "Kompanija XYZ d.o.o., Novi Sad",
+#   "status": 0,
+#   "createdAt": "2024-11-24T01:00:00Z"
+# }
+
+# 4. POST /api/Shipments/1/Documents - 202 Accepted
+# {
+#   "blobName": "1/a1b2c3d4-e5f6-7890-abcd-ef1234567890_invoice.pdf",
+#   "blobUrl": "http://127.0.0.1:10010/devstoreaccount1/shipments-documents/1/a1b2c3d4-e5f6-7890-abcd-ef1234567890_invoice.pdf"
+# }
+
+###############################################
+### STATUS ENUM VREDNOSTI
+###############################################
+
+# 0 = Created         - Pošiljka kreirana
+# 1 = DocumentUploaded - Dokument upload-ovan, čeka se procesiranje
+# 2 = Processed       - Dokument procesiran od strane background worker-a
+
+# Komanda za pokretanje Azurite sa custom portovima:
+# azurite --location ./azurite_workspace --silent --blobPort 10010 --queuePort 10011 --tablePort 10012
+
